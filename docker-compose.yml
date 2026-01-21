@@ -42,13 +42,13 @@ services:
       - /app/node_modules
     stdin_open: true
 
-  ollama:
-    image: ollama/ollama:latest
-    container_name: activity_tracker_ollama
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama:/root/.ollama
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   container_name: activity_tracker_ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama:/root/.ollama
 
 volumes:
   pgdata:

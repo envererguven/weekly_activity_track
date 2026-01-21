@@ -8,6 +8,7 @@ This document outlines the requirements, architecture, and feature set for the A
 - **Improve Accuracy**: Enforce field validation and provided dropdowns.
 - **Enhance Visibility**: Provide dashboards for effort analysis and executive summaries.
 - **Support Remote/Local Work**: Deployable via Docker for consistent environments.
+- **Improved UX**: Intelligent filtering that defaults to the most relevant data (current or latest week).
 
 ## 2. User Roles
 - **Team Member**: Enters weekly activities, views own history.
@@ -27,6 +28,7 @@ Each activity entry must capture:
 - **ID/Reference**: Required for Proje/Talep/Defect categories.
 - **Criticality**: 5-level scale from "Çok Kritik" to "Hiç Kritik Değil".
 - **Product/Service**: Autocomplete field (e.g., PIMS, DDP).
+- **User**: Selected via dropdown (Defaults to filtered user if applicable).
 - **Subject & Description**: Free text.
 - **Weekly Progress**:
   - `Gelişme Durumu` (Progress text)
@@ -36,6 +38,16 @@ Each activity entry must capture:
 - **Auto-Date**: Default to current week (e.g., 2026-W04).
 - **Smart Suggestions**: Suggest frequently used Products/Subjects based on history.
 - **Sorting**: Most recent updates at the top.
+- **Filtering (New)**:
+  - Filter by **Team Member** (Name).
+  - Filter by **Product**.
+  - Filter by **Week** (Default: Current Week. Fallback: Last week with data).
+  - **Search Logic**: "Week" filter must support partial matches (e.g., "2025" matches "2025-W01").
+  - **Interaction**: Input should trigger "Live Filtering" (Type-ahead) without requiring form submission.
+  - **Multi-select**: Filters should be additive (AND logic).
+  - **Layout**: Simplified view removing legacy global context filters.
+  - **Columns**: Include "Effort".
+  - **Sorting**: Clickable headers for all columns (Asc/Desc).
 
 ### 3.3 Admin Capabilities
 - **User Management**:
@@ -46,6 +58,9 @@ Each activity entry must capture:
   - Add new products.
   - Edit product names.
   - Soft-delete products.
+- **Bulk Data Management**:
+  - **Excel Upload**: Admin can upload an Excel file to bulk insert activities.
+  - **Auto-Creation**: System auto-creates missing Users/Products found in the Excel file.
 
 ### 3.4 Dashboard & Reporting
 - **Metrics**: 
@@ -78,4 +93,5 @@ The solution is fully containerized with `docker-compose`.
 ## 5. Implementation Roadmap
 - **Phase 1 (MVP)**: Basic CRUD, Excel replacer. (Completed)
 - **Phase 2 (Enhancements)**: Admin Panel (Users/Products), Dashboard Charts, LLM Integration. (Completed)
+- **Phase 2.1 (Refinements)**: Advanced Filtering, Dashboard Visuals, Test Data Generation (2024/2025).
 - **Phase 3**: Authentication, Role-based Access Control (Future).

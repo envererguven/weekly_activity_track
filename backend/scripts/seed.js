@@ -33,6 +33,10 @@ const seed = async () => {
     try {
         console.log('Seeding data...');
 
+        // 0. Clear existing data
+        await pool.query('TRUNCATE TABLE activities RESTART IDENTITY CASCADE');
+        console.log('Cleared existing activities.');
+
         // 1. Get Users
         const usersRes = await pool.query('SELECT id FROM users');
         const users = usersRes.rows;
@@ -41,52 +45,68 @@ const seed = async () => {
             process.exit(1);
         }
 
-        // 2. Generate 100 Activities
-        for (let i = 0; i < 100; i++) {
-            const user = getRandom(users);
-            const productName = getRandom(PRODUCTS);
-            const category = getRandom(CATEGORY_OPTIONS);
-            const status = getRandom(STATUS_OPTIONS);
-            const criticality = getRandom(CRITICALITY_OPTIONS);
-            const subject = getRandom(SUBJECTS) + ` - ${i + 1}`; // Ensure variety
-            const description = `This is a sample description for activity ${i + 1}. Generated automatically.`;
+        // 2. Generate Activities for 2024, 2025, and 2026
+        const years = [2024, 2025, 2026];
 
-            // Resolve Product ID
-            let productId;
-            const productRes = await pool.query('SELECT id FROM products WHERE name = $1', [productName]);
-            if (productRes.rows.length > 0) {
-                productId = productRes.rows[0].id;
-            } else {
-                const newProduct = await pool.query('INSERT INTO products (name) VALUES ($1) RETURNING id', [productName]);
-                productId = newProduct.rows[0].id;
-            }
+        for (const year of years) {
+            console.log(`Generating data for ${year}...`);
+            const count = year === 2026 ? 20 : 50; // 50 for past years, 20 for current year
 
-            // Prepare Weekly Data (Mocking last 4 weeks)
-            const weeklyData = {};
-            const recentWeeks = ['2026-W01', '2026-W02', '2026-W03', '2026-W04'];
-            // Fill 1 or 2 weeks randomly
-            const weeksToFill = recentWeeks.filter(() => Math.random() > 0.5);
-            if (weeksToFill.length === 0) weeksToFill.push('2026-W04');
+            for (let i = 0; i < count; i++) {
+                const user = getRandom(users);
+                const productName = getRandom(PRODUCTS);
+                const category = getRandom(CATEGORY_OPTIONS);
+                const status = getRandom(STATUS_OPTIONS);
+                const criticality = getRandom(CRITICALITY_OPTIONS);
+                const subject = `${year} - ${getRandom(SUBJECTS)} - ${i + 1}`;
+                const description = `Auto-generated activity for ${year}. Item ${i + 1}.`;
 
-            weeksToFill.forEach(week => {
-                weeklyData[week] = {
-                    progress: 'Working on it...',
+                // Resolve Product ID
+                let productId;
+                const productRes = await pool.query('SELECT id FROM products WHERE name = $1', [productName]);
+                if (productRes.rows.length > 0) {
+                    productId = productRes.rows[0].id;
+                } else {
+                    const newProduct = await pool.query('INSERT INTO products (name) VALUES ($1) RETURNING id', [productName]);
+                    productId = newProduct.rows[0].id;
+                }
+
+                // Prepare Weekly Data
+                const weeklyData = {};
+
+                // For 2026, ensure we have some "Current Week" (e.g., W04) data
+                let weekKey;
+                if (year === 2026) {
+                    // Random week between 1 and 4 for 2026
+                    const simpleWeek = Math.floor(Math.random() * 4) + 1;
+                    weekKey = `2026-W${simpleWeek.toString().padStart(2, '0')}`;
+                } else {
+                    // Random week 1-52 for other years
+                    const weekNum = Math.floor(Math.random() * 52) + 1;
+                    weekKey = `${year}-W${weekNum.toString().padStart(2, '0')}`;
+                }
+
+                weeklyData[weekKey] = {
+                    progress: `Progress report for ${weekKey}`,
                     effort: Math.floor(Math.random() * 8) + 1
                 };
-            });
 
-            // Ref ID if needed
-            const refId = category.includes('(Zorunlu)') ? `REF-${1000 + i}` : null;
+                // Ref ID
+                const refId = category.includes('(Zorunlu)') ? `REF-${year}-${1000 + i}` : null;
 
-            await pool.query(
-                `INSERT INTO activities 
-                (user_id, product_id, category, status, ref_id, criticality, subject, description, weekly_data, created_at) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW() - (random() * interval '30 days'))`,
-                [user.id, productId, category, status, refId, criticality, subject, description, weeklyData]
-            );
+                // Random date within that year
+                const createdAt = new Date(year, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+
+                await pool.query(
+                    `INSERT INTO activities 
+                    (user_id, product_id, category, status, ref_id, criticality, subject, description, weekly_data, created_at) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                    [user.id, productId, category, status, refId, criticality, subject, description, weeklyData, createdAt]
+                );
+            }
         }
 
-        console.log('Successfully seeded 100 activities.');
+        console.log('Successfully seeded activities.');
         process.exit(0);
     } catch (error) {
         console.error('Error seeding data:', error);

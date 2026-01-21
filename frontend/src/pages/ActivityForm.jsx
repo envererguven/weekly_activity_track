@@ -3,7 +3,7 @@ import {
     Box, TextField, Select, MenuItem, FormControl, InputLabel, Button,
     Typography, Grid, Paper, Autocomplete
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import api from '../api';
 
@@ -28,8 +28,10 @@ const CRITICALITY_OPTIONS = [
 
 const ActivityForm = () => {
     const navigate = useNavigate();
-    const { currentWeek, currentUser } = useApp();
+    const location = useLocation(); // Hook to get passed state
+    const { currentWeek } = useApp(); // Removed global currentUser dependency
     const [formData, setFormData] = useState({
+        user_id: '', // Added user_id to local state
         category: '',
         ref_id: '',
         status: 'Yeni Konu',
@@ -42,12 +44,24 @@ const ActivityForm = () => {
     });
 
     const [products, setProducts] = useState([]);
+    const [users, setUsers] = useState([]); // State for users list
     const [otherDetail, setOtherDetail] = useState('');
 
     useEffect(() => {
-        // Load products for autocomplete
-        api.get('/products').then(res => setProducts(res.data)).catch(console.error);
-    }, []);
+        // Load products and users
+        Promise.all([
+            api.get('/products'),
+            api.get('/users')
+        ]).then(([prodRes, userRes]) => {
+            setProducts(prodRes.data);
+            setUsers(userRes.data);
+
+            // Check for pre-selected user from navigation state
+            if (location.state && location.state.user) {
+                setFormData(prev => ({ ...prev, user_id: location.state.user }));
+            }
+        }).catch(console.error);
+    }, [location.state]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -55,17 +69,16 @@ const ActivityForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!currentUser) {
-            alert("Lütfen yukarıdan bir kullanıcı seçiniz.");
+        if (!formData.user_id) {
+            alert("Lütfen kullanıcı seçiniz.");
             return;
         }
 
         const payload = {
             ...formData,
-            user_id: currentUser.id,
+            // user_id is already in formData
             week: currentWeek,
             progress: formData.weekly_progress,
-            // If category is Other, map detail to somewhere distinctive
             category: formData.category === 'Diğer' ? `Diğer - ${otherDetail}` : formData.category
         };
 
@@ -85,6 +98,16 @@ const ActivityForm = () => {
             <Typography variant="h5" gutterBottom>Yeni Aktivite Girişi ({currentWeek})</Typography>
             <form onSubmit={handleSubmit}>
                 <Grid container spacing={3}>
+                    {/* User Selection First */}
+                    <Grid item xs={12}>
+                        <FormControl fullWidth required>
+                            <InputLabel>Kullanıcı</InputLabel>
+                            <Select name="user_id" value={formData.user_id} onChange={handleChange} label="Kullanıcı">
+                                {users.map(u => <MenuItem key={u.id} value={u.id}>{u.full_name}</MenuItem>)}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+
                     <Grid item xs={12} md={6}>
                         <FormControl fullWidth required>
                             <InputLabel>Kategori</InputLabel>

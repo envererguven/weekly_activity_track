@@ -99,6 +99,30 @@ const Admin = () => {
         }
     };
 
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [uploadResult, setUploadResult] = useState(null);
+
+    const handleUpload = async () => {
+        if (!selectedFile) return;
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        try {
+            setUploadResult(null);
+            const res = await api.post('/admin/import', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            setUploadResult(res.data);
+            if (res.data.successCount > 0) {
+                // Refresh other data if needed
+            }
+        } catch (error) {
+            console.error(error);
+            setUploadResult({ message: 'Yükleme başarısız', errors: [error.message] });
+        }
+    };
+
     return (
         <Paper sx={{ p: 4, mt: 4 }}>
             <Typography variant="h5" gutterBottom>Yönetim Paneli</Typography>
@@ -107,6 +131,7 @@ const Admin = () => {
                 <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)}>
                     <Tab label="Personel Yönetimi" />
                     <Tab label="Ürün/Servis Yönetimi" />
+                    <Tab label="Toplu Yükleme" />
                 </Tabs>
             </Box>
 
@@ -236,6 +261,67 @@ const Admin = () => {
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                    </Grid>
+                </Grid>
+            )}
+
+            {/* BULK UPLOAD TAB */}
+            {tabValue === 2 && (
+                <Grid container spacing={4}>
+                    <Grid item xs={12} md={6}>
+                        <Typography variant="h6" gutterBottom>Toplu Veri Yükleme (Excel)</Typography>
+                        <Typography variant="body2" color="textSecondary" paragraph>
+                            Aşağıdaki formatta bir Excel dosyası yükleyiniz. İlk satır başlık olmalıdır.
+                            Sütunlar: Kategori, Konu, Ürün, Sorumlu, Statü, Kritiklik, Efor, Haftalık Durum, Hafta(Opsiyonel)
+                        </Typography>
+
+                        <Box sx={{ border: '1px dashed #ccc', p: 3, textAlign: 'center', mb: 2 }}>
+                            <input
+                                accept=".xlsx, .xls"
+                                style={{ display: 'none' }}
+                                id="raised-button-file"
+                                type="file"
+                                onChange={(e) => setSelectedFile(e.target.files[0])}
+                            />
+                            <label htmlFor="raised-button-file">
+                                <Button variant="outlined" component="span">
+                                    Dosya Seç
+                                </Button>
+                            </label>
+                            {selectedFile && <Typography sx={{ mt: 1 }}>{selectedFile.name}</Typography>}
+                        </Box>
+
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            disabled={!selectedFile}
+                            onClick={handleUpload}
+                        >
+                            Yükle
+                        </Button>
+
+                        {uploadResult && (
+                            <Box sx={{ mt: 2, p: 2, bgcolor: '#f5f5f5', borderRadius: 1 }}>
+                                <Typography variant="subtitle2" color={uploadResult.successCount > 0 ? "success.main" : "error"}>
+                                    {uploadResult.message}
+                                </Typography>
+                                {uploadResult.successCount !== undefined && (
+                                    <Typography variant="body2">
+                                        Başarılı: {uploadResult.successCount} / {uploadResult.totalProcessed}
+                                    </Typography>
+                                )}
+                                {uploadResult.errors && (
+                                    <Box sx={{ mt: 1, maxHeight: 100, overflow: 'auto' }}>
+                                        {uploadResult.errors.map((e, i) => (
+                                            <Typography key={i} variant="caption" display="block" color="error">
+                                                {e}
+                                            </Typography>
+                                        ))}
+                                    </Box>
+                                )}
+                            </Box>
+                        )}
                     </Grid>
                 </Grid>
             )}

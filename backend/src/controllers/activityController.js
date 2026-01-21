@@ -2,7 +2,7 @@ const db = require('../db');
 
 exports.getAllActivities = async (req, res) => {
     try {
-        const { week, page = 1, limit = 10, sort = 'updated_at' } = req.query;
+        const { week, page = 1, limit = 10, sort = 'updated_at', order = 'DESC', userId, productId } = req.query;
         const offset = (page - 1) * limit;
 
         let query = `
@@ -10,23 +10,84 @@ exports.getAllActivities = async (req, res) => {
       FROM activities a
       LEFT JOIN users u ON a.user_id = u.id
       LEFT JOIN products p ON a.product_id = p.id
+      WHERE 1=1
     `;
         const params = [];
+        let paramIdx = 1;
 
-        // Filter by week logic is tricky because week data is in JSONB or implicit in 'updated_at' 
-        // BUT requirements say "Dynamic columns for each week".
-        // For listing, we usually list the *Activity* (Task) itself.
-        // However, if we filter by week, maybe we only show activities active in that week?
-        // For MVP, simple listing:
+        if (userId) {
+            query += ` AND a.user_id = $${paramIdx++}`;
+            params.push(userId);
+        }
 
-        // Simplification: We just list all tasks
-        query += ` ORDER BY a.${sort} DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+        if (productId) {
+            query += ` AND a.product_id = $${paramIdx++}`;
+            params.push(productId);
+        }
+
+        if (week) {
+            // Partial Match using EXISTS subquery on keys
+            // Logic: Is there ANY key in weekly_data that matches the pattern?
+            query += ` AND EXISTS (
+                SELECT 1 FROM jsonb_object_keys(a.weekly_data) k 
+                WHERE k ILIKE $${paramIdx++}
+            )`;
+            params.push(`%${week}%`);
+        }
+
+        // Sorting Logic
+        const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        let sortColumn = 'a.updated_at';
+
+        switch (sort) {
+            case 'user': sortColumn = 'user_name'; break;
+            case 'product': sortColumn = 'product_name'; break;
+            case 'category': sortColumn = 'a.category'; break;
+            case 'status': sortColumn = 'a.status'; break;
+            case 'subject': sortColumn = 'a.subject'; break;
+            case 'criticality': sortColumn = 'a.criticality'; break;
+            case 'effort':
+                // Extract effort from JSONB. Logic: 
+                // If filtering by week, use that week's effort.
+                // If not, use '0' or maybe sum? For listing, let's use the first key's effort or 0 if week not specified.
+                // But typically UI passes a week.
+                // Cast to numeric for correct sorting.
+                if (week) {
+                    sortColumn = `(a.weekly_data->'${week}'->>'effort')::numeric`;
+                } else {
+                    sortColumn = 'a.updated_at'; // Fallback if no week context for effort sort
+                }
+                break;
+            default: sortColumn = 'a.updated_at';
+        }
+
+        query += ` ORDER BY ${sortColumn} ${sortOrder} LIMIT $${paramIdx++} OFFSET $${paramIdx++}`;
         params.push(limit, offset);
 
         const { rows } = await db.query(query, params);
 
-        // Get total count
-        const countResult = await db.query('SELECT COUNT(*) FROM activities');
+        // Get total count with same filters
+        let countQuery = 'SELECT COUNT(*) FROM activities a WHERE 1=1';
+        const countParams = [];
+        let countParamIdx = 1;
+
+        if (userId) {
+            countQuery += ` AND a.user_id = $${countParamIdx++}`;
+            countParams.push(userId);
+        }
+        if (productId) {
+            countQuery += ` AND a.product_id = $${countParamIdx++}`;
+            countParams.push(productId);
+        }
+        if (week) {
+            countQuery += ` AND EXISTS (
+                SELECT 1 FROM jsonb_object_keys(a.weekly_data) k 
+                WHERE k ILIKE $${countParamIdx++}
+            )`;
+            countParams.push(`%${week}%`);
+        }
+
+        const countResult = await db.query(countQuery, countParams);
 
         res.json({
             data: rows,
@@ -125,5 +186,26 @@ exports.updateActivity = async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
+    }
+};
+
+exports.getLatestWeek = async (req, res) => {
+    try {
+        const query = `
+            SELECT key as week 
+            FROM activities, jsonb_each(weekly_data) 
+            ORDER BY key DESC 
+            LIMIT 1
+        `;
+        const result = await db.query(query);
+
+        if (result.rows.length > 0) {
+            res.json({ week: result.rows[0].week });
+        } else {
+            res.json({ week: null });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error fetching latest week' });
     }
 };

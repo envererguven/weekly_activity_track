@@ -1,0 +1,50 @@
+# Tasks
+
+- [x] Planning New Features <!-- id: 0 -->
+    - [x] Explore existing codebase (Frontend/Backend) for filtering and dashboard <!-- id: 1 -->
+    - [x] Create Implementation Plan <!-- id: 2 -->
+    - [x] Update PDR <!-- id: 3 -->
+- [ ] Implement Filtering <!-- id: 4 -->
+    - [ ] Implement Filtering <!-- id: 4 -->
+    - [x] Update Backend API to support filtering (Name, Product, Week) <!-- id: 5 -->
+    - [x] Update Frontend Activity List to add filter controls <!-- id: 6 -->
+- [x] Implement Dashboard Enhancements <!-- id: 7 -->
+    - [x] Create/Update Dashboard API for aggregated metrics <!-- id: 8 -->
+    - [x] Create/Update Dashboard UI with Charts (Recharts) <!-- id: 9 -->
+- [x] Generate Test Data <!-- id: 10 -->
+    - [x] Create seed script for 2024/2025 data <!-- id: 11 -->
+    - [x] Run seed script <!-- id: 12 -->
+- [x] Verification <!-- id: 13 -->
+    - [x] Verify Filtering (Deep Dive) <!-- id: 14 -->
+    - [x] Verify Dashboard <!-- id: 15 -->
+- [x] Refine Filtering & Layout <!-- id: 17 -->
+    - [x] Add Backend endpoint for Latest Week <!-- id: 18 -->
+    - [x] Update Layout (remove top bar) <!-- id: 19 -->
+    - [x] Implement Smart Week Default in Activity List <!-- id: 20 -->
+    - [x] Verify Refinements <!-- id: 21 -->
+- [x] User Experience Improvements <!-- id: 22 -->
+    - [x] Update ActivityForm for local User Selection <!-- id: 23 -->
+    - [x] Carry over User filter from List to Form <!-- id: 24 -->
+    - [x] Add Effort Column to Activity List <!-- id: 25 -->
+    - [x] Implement Sortable Columns in Activity List <!-- id: 26 -->
+    - [x] Verify UX Improvements <!-- id: 27 -->
+- [x] Real-Time Flexible Search <!-- id: 28 -->
+    - [x] Update PDR/Prompt for Search Architecture <!-- id: 29 -->
+    - [x] Update Backend for Partial Week Matching (JSONB) <!-- id: 30 -->
+    - [x] Optimize Frontend with Debounce <!-- id: 31 -->
+    - [x] Verify 2025 Data Visibility <!-- id: 32 -->
+- [x] Bulk Upload Feature <!-- id: 33 -->
+    - [x] Update PDR/Prompt <!-- id: 34 -->
+    - [x] Create Architecture Documentation (architecture.md) <!-- id: 35 -->
+    - [x] Backend: Excel Upload Endpoint (multer/xlsx) <!-- id: 36 -->
+    - [x] Frontend: Admin Upload Tab <!-- id: 37 -->
+- [x] Comprehensive Documentation Update <!-- id: 38 -->
+    - [x] Update GUIDE.md (Docker, SQL, Curl, Operations) <!-- id: 39 -->
+- [ ] Phase 3: Authentication & Security <!-- id: 40 -->
+    - [ ] Plan Authentication System (JWT, Roles) <!-- id: 41 -->
+    - [ ] Backend: Setup Auth Controller & Middleware <!-- id: 42 -->
+    - [ ] Backend: Update Users Table (Password/Role) <!-- id: 43 -->
+    - [ ] Frontend: Login Page <!-- id: 44 -->
+    - [ ] Frontend: Protect Routes (Require Auth) <!-- id: 45 -->
+    - [ ] Frontend: Role-Based UI (Admin vs User) <!-- id: 46 -->
+    - [ ] Verification: Test Login & Protected Routes <!-- id: 47 -->

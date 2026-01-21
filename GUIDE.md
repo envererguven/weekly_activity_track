@@ -1,100 +1,105 @@
-# Operations Guide
+# Activity Tracking System - Operational Guide
 
-This document contains essential commands for managing the Activity Tracker application, verifying the database, and running tests.
+This guide covers all operational aspects of the Activity Tracking System, including installation, running, testing, database management, and architecture overview.
 
-## Docker Commands
+## 1. Prerequisites
+- Docker & Docker Compose
+- Node.js (for local development scripts)
 
-### 1. Build and Start Application
-Rebuilds the images (useful after changes) and starts the containers in detached mode.
+## 2. Quick Start (Run Everything)
+To build and start the entire stack (Database, Backend, Frontend):
+
 ```bash
 docker compose up -d --build
 ```
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend API: [http://localhost:5000/api](http://localhost:5000/api)
+- API Health Check: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
-### 2. View Logs
-View logs for all services or specific ones.
+docker exec activity_tracker_backend cat package.json
+docker exec activity_tracker_backend ls -F
+docker exec activity_tracker_backend node scripts/seed.js
+
+docker exec activity_tracker_db psql -U user -d activity_db -c "SELECT COUNT(*) FROM activities;"
+docker exec activity_tracker_db psql -U user -d activity_db -c "SELECT * FROM activities LIMIT 5;"
+docker exec activity_tracker_db psql -U user -d activity_db -c "SELECT EXTRACT(YEAR FROM created_at) as year, COUNT(*) FROM activities GROUP BY year ORDER BY year;"
+
+docker logs activity_tracker_backend
+
+## 3. Database Operations
+
+### 3.1 Access Database CLI
 ```bash
-# All services
-docker compose logs -f
-
-# Specific service (frontend, backend, db)
-docker compose logs -f backend
+docker compose exec db psql -U user -d activity_db
 ```
 
-### 3. Stop Application
-Stops and removes the containers/networks.
+### 3.2 Reset Database (Seed Data)
+Note: This will delete existing data and seed with test data.
+```bash
+# Generate seed file (optional if not exists)
+node backend/scripts/seed_large.js
+
+# Apply seed inside container
+docker compose exec backend node scripts/seed_large.js
+```
+
+### 3.3 Manual SQL Execution
+Execute arbitrary SQL (replace `YOUR_QUERY`):
+```bash
+docker compose exec db psql -U user -d activity_db -c "SELECT count(*) FROM activities;"
+```
+
+## 4. Testing
+
+### 4.1 Automated Tests
+Run the project's test suite (verifies filtering, smart week, sorting):
+```bash
+docker compose exec backend npm test
+```
+*Includes: `smart_week_test.js`, `ux_verification.js`, `partial_search_test.js`*
+
+### 4.2 Manual API Testing (cURL)
+**Create Activity:**
+```bash
+curl -X POST http://localhost:5000/api/activities \
+  -H "Content-Type: application/json" \
+  -d '{
+    "user_id": 1, 
+    "product_name": "PIMS", 
+    "week": "2026-W04", 
+    "status": "Devam Eden", 
+    "effort": 4, 
+    "category": "Ar-Ge" 
+  }'
+```
+
+**Bulk Import (Admin):**
+```bash
+curl -F "file=@path/to/data.xlsx" http://localhost:5000/api/admin/import
+```
+
+## 5. Deployment & Maintenance
+
+### 5.1 Rebuild Containers
+If you modify `package.json` or Dockerfiles:
 ```bash
 docker compose down
+docker compose up -d --build
 ```
 
-### 4. Execute Command in Container
-Access the shell or run specific commands inside a running container.
+### 5.2 Logs
+View logs for troubleshooting:
 ```bash
-# Access Backend Shell
-docker compose exec backend sh
-
-# Access Database Shell
-docker compose exec db psql -U user -d activity_db
+docker compose logs -f backend
+docker compose logs -f frontend
 ```
 
-## Database Operations (SQL)
+## 6. Architecture & Modules
+See [architecture.md](./brain/cfac8c1a-3a89-4cf2-ad1a-bd352f8b38c8/architecture.md) for detailed diagrams.
 
-To run these, first access the DB shell:
-```bash
-docker compose exec db psql -U user -d activity_db
-```
-
-### 1. Check Tables
-```sql
-\dt
-```
-
-### 2. Users Manual Management
-```sql
--- Insert User
-INSERT INTO users (full_name) VALUES ('New Person');
-
--- Soft Delete User (set is_active = false)
-UPDATE users SET is_active = false WHERE full_name = 'Person Name';
-
--- Reactivate User
-UPDATE users SET is_active = true WHERE full_name = 'Person Name';
-
--- Check all users
-SELECT * FROM users ORDER BY id;
-```
-
-### 3. Products Manual Management
-```sql
--- Insert Product
-INSERT INTO products (name, description) VALUES ('New System', 'System Description');
-
--- Soft Delete Product
-UPDATE products SET is_active = false WHERE name = 'System Name';
-```
-
-### 4. View Activities
-```sql
-SELECT left(subject, 20) as subj, status, category FROM activities ORDER BY created_at DESC LIMIT 5;
-```
-
-## Maintenance Scripts
-
-Run these scripts from the root directory (`/scripts` folder).
-
-### Run Tests
-Executes backend and frontend verification tests.
-```bash
-bash scripts/test.sh
-```
-
-### Utility Scripts
-- **build.sh**: Helper to build images.
-- **run.sh**: Helper to run `docker compose up`.
-
-## Troubleshooting
-
-### "Duplicate Key" Error
-If you see `duplicate key value violates unique constraint`, you are trying to insert a record (e.g., User or Product) with a name that already exists. Use `UPDATE` instead or delete the old record.
-
-### "Invalid input syntax for type integer: undefined"
-This usually happens in API tests or calls when an ID is missing. Ensure the resource was created successfully before trying to update or delete it using its ID.
+- **Stack**: React, Node.js, PostgreSQL.
+- **Key Features**: 
+  - Dynamic JSONB storage for weekly updates.
+  - "Smart Week" filtering (Current vs Latest).
+  - Real-time partial search.
+  - Bulk Excel Upload.

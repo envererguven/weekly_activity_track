@@ -3,9 +3,18 @@ const router = express.Router();
 const activityController = require('../controllers/activityController');
 const userController = require('../controllers/userController');
 const productController = require('../controllers/productController');
+const adminController = require('../controllers/adminController');
 const statsController = require('../controllers/statsController');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
-// Activities
+// ... existing routes ...
+
+// Admin / Bulk Import
+router.post('/admin/import', upload.single('file'), adminController.bulkImport);
+
+
+router.get('/activities/latest-week', activityController.getLatestWeek);
 router.get('/activities', activityController.getAllActivities);
 router.post('/activities', activityController.createActivity);
 router.put('/activities/:id', activityController.updateActivity);
