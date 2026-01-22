@@ -65,7 +65,7 @@ curl -X POST http://localhost:5000/api/activities \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": 1, 
-    "product_name": "PIMS", 
+    "product_name": "CRM", 
     "week": "2026-W04", 
     "status": "Devam Eden", 
     "effort": 4, 
