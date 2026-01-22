@@ -5,7 +5,7 @@
     - [x] Create Implementation Plan <!-- id: 2 -->
     - [x] Update PDR <!-- id: 3 -->
 - [ ] Implement Filtering <!-- id: 4 -->
-    - [ ] Implement Filtering <!-- id: 4 -->
+    - [x] Implement Filtering <!-- id: 4 -->
     - [x] Update Backend API to support filtering (Name, Product, Week) <!-- id: 5 -->
     - [x] Update Frontend Activity List to add filter controls <!-- id: 6 -->
 - [x] Implement Dashboard Enhancements <!-- id: 7 -->

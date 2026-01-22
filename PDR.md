@@ -95,3 +95,6 @@ The solution is fully containerized with `docker-compose`.
 - **Phase 2 (Enhancements)**: Admin Panel (Users/Products), Dashboard Charts, LLM Integration. (Completed)
 - **Phase 2.1 (Refinements)**: Advanced Filtering, Dashboard Visuals, Test Data Generation (2024/2025).
 - **Phase 3**: Authentication, Role-based Access Control (Future).
+- **Phase 4**: gelecek hafta için planan aksiyonlar kolonu eklencek. bu haftanın haftanın aksiyonları girilen geçen haftadan planlanan otomatik gelecek
+- **Phase 5**:dashboard. proje, talep, defect dağılımı, grafik pasta olarak eklenecek. genel ve kişi bazlı.
+- **phase 6**: time management takvim, eklenecek, bu takvime kişilerin izinler izinlerini de ekleyebilecekler.  
