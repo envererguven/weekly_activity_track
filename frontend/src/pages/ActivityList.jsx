@@ -22,6 +22,10 @@ const ActivityList = () => {
         week: ''
     });
 
+    // Inline Editing State
+    const [editingId, setEditingId] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+
     // Helper to get current week YYYY-WXX
     const getCurrentWeek = () => {
         const d = new Date();
@@ -122,6 +126,46 @@ const ActivityList = () => {
         setSortConfig({ key, direction });
     };
 
+    // Inline Edit Handlers
+    const handleEditClick = (row) => {
+        const weekly = row.weekly_data && row.weekly_data[filters.week];
+        setEditingId(row.id);
+        setEditFormData({
+            status: row.status,
+            progress: weekly ? weekly.progress : '',
+            effort: weekly ? weekly.effort : 0
+        });
+    };
+
+    const handleCancelClick = () => {
+        setEditingId(null);
+        setEditFormData({});
+    };
+
+    const handleEditChange = (e) => {
+        setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
+    };
+
+    const handleSaveClick = async (id) => {
+        try {
+            await api.put(`/activities/${id}`, {
+                ...editFormData,
+                week: filters.week // Context for weekly_data update
+            });
+            setEditingId(null);
+            fetchActivities(); // Refresh list
+        } catch (error) {
+            console.error("Update failed", error);
+            alert("Güncelleme başarısız oldu.");
+        }
+    };
+
+    const formatDate = (dateString) => {
+        if (!dateString) return '-';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('tr-TR');
+    };
+
     return (
         <React.Fragment>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4, mb: 2 }}>
@@ -171,6 +215,7 @@ const ActivityList = () => {
                 <Table>
                     <TableHead>
                         <TableRow sx={{ bgcolor: '#eee' }}>
+                            <TableCell onClick={() => handleSort('updated_at')} style={{ cursor: 'pointer' }}>Tarih</TableCell>
                             <TableCell onClick={() => handleSort('id')} style={{ cursor: 'pointer' }}>ID</TableCell>
                             <TableCell onClick={() => handleSort('category')} style={{ cursor: 'pointer' }}>Kategori</TableCell>
                             <TableCell onClick={() => handleSort('subject')} style={{ cursor: 'pointer' }}>Konu</TableCell>
@@ -180,16 +225,19 @@ const ActivityList = () => {
                             <TableCell onClick={() => handleSort('criticality')} style={{ cursor: 'pointer' }}>Kritiklik</TableCell>
                             <TableCell onClick={() => handleSort('effort')} style={{ cursor: 'pointer' }}>Efor</TableCell>
                             <TableCell>Haftalık Durum</TableCell>
+                            <TableCell>İşlemler</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {activities.map((row) => {
+                            const isEditing = editingId === row.id;
                             const weekly = row.weekly_data && row.weekly_data[filters.week];
                             const progressText = weekly ? weekly.progress : '-';
                             const effortText = weekly ? weekly.effort : '0';
 
                             return (
                                 <TableRow key={row.id}>
+                                    <TableCell>{formatDate(row.updated_at)}</TableCell>
                                     <TableCell>{row.ref_id || row.id}</TableCell>
                                     <TableCell>{row.category}</TableCell>
                                     <TableCell>
@@ -198,10 +246,59 @@ const ActivityList = () => {
                                     </TableCell>
                                     <TableCell>{row.product_name}</TableCell>
                                     <TableCell>{row.user_name}</TableCell>
-                                    <TableCell><Chip label={row.status} size="small" /></TableCell>
+
+                                    {/* Inline Edit Columns */}
+                                    <TableCell>
+                                        {isEditing ? (
+                                            <select name="status" value={editFormData.status} onChange={handleEditChange}>
+                                                <option value="Yeni Konu">Yeni Konu</option>
+                                                <option value="Devam Eden">Devam Eden</option>
+                                                <option value="Tamamlandı">Tamamlandı</option>
+                                            </select>
+                                        ) : (
+                                            <Chip label={row.status} size="small" />
+                                        )}
+                                    </TableCell>
+
                                     <TableCell>{row.criticality?.split('-')[0]}</TableCell>
-                                    <TableCell>{effortText}</TableCell>
-                                    <TableCell>{progressText}</TableCell>
+
+                                    <TableCell>
+                                        {isEditing ? (
+                                            <input
+                                                type="number"
+                                                name="effort"
+                                                value={editFormData.effort}
+                                                onChange={handleEditChange}
+                                                style={{ width: '60px' }}
+                                            />
+                                        ) : (
+                                            effortText
+                                        )}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {isEditing ? (
+                                            <textarea
+                                                name="progress"
+                                                value={editFormData.progress}
+                                                onChange={handleEditChange}
+                                                rows={2}
+                                            />
+                                        ) : (
+                                            progressText
+                                        )}
+                                    </TableCell>
+
+                                    <TableCell>
+                                        {isEditing ? (
+                                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                                <Button size="small" variant="contained" color="success" onClick={() => handleSaveClick(row.id)}>Kaydet</Button>
+                                                <Button size="small" variant="outlined" color="error" onClick={handleCancelClick}>İptal</Button>
+                                            </Box>
+                                        ) : (
+                                            <Button size="small" variant="text" onClick={() => handleEditClick(row)}>Düzenle</Button>
+                                        )}
+                                    </TableCell>
                                 </TableRow>
                             );
                         })}
