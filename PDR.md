@@ -94,7 +94,16 @@ The solution is fully containerized with `docker-compose`.
 - **Phase 1 (MVP)**: Basic CRUD, Excel replacer. (Completed)
 - **Phase 2 (Enhancements)**: Admin Panel (Users/Products), Dashboard Charts, LLM Integration. (Completed)
 - **Phase 2.1 (Refinements)**: Advanced Filtering, Dashboard Visuals, Test Data Generation (2024/2025).
-- **Phase 3**: Authentication, Role-based Access Control (Future).
-- **Phase 4**: gelecek hafta için planan aksiyonlar kolonu eklencek. bu haftanın haftanın aksiyonları girilen geçen haftadan planlanan otomatik gelecek
-- **Phase 5**:dashboard. proje, talep, defect dağılımı, grafik pasta olarak eklenecek. genel ve kişi bazlı.
-- **phase 6**: time management takvim, eklenecek, bu takvime kişilerin izinler izinlerini de ekleyebilecekler.  
+- **Phase 3 (UX Intelligence)**:
+  - **Smart Suggestions**: Auto-populate fields based on recent history when creating new activities.
+  - **List View Upgrade**: Display dates next to actions; Allow "In-Line Editing" to update past/current items without creating new entries.
+- **Phase 4 (Planning Module)**:
+  - **Next Week's Plan**: Add column for "Actions Planned for Next Week".
+  - **Auto-Carryover**: Logic to surface last week's "Planned" items as suggestions for the current week.
+- **Phase 5 (Advanced Analytics)**:
+  - **Visual Dashboard**: Pie/Bar charts for distribution (Project vs Request vs Defect).
+  - **Scopes**: Toggle between "Personal" (My metrics) and "Global" (Team metrics) views.
+- **Phase 6 (Resource Management)**:
+  - **Calendar**: Visual calendar for Time-off/Leave tracking.
+  - **Availability**: Integrate leave data into capacity planning.
+- **Phase 7 (Security)**: Authentication & RBAC (Future). 
