@@ -103,3 +103,19 @@ See [architecture.md](./brain/cfac8c1a-3a89-4cf2-ad1a-bd352f8b38c8/architecture.
   - "Smart Week" filtering (Current vs Latest).
   - Real-time partial search.
   - Bulk Excel Upload.
+
+## 7. User Guide - Dashboard (Phase 5)
+
+The Dashboard (`/dashboard`) provides advanced analytics:
+
+1.  **Scope Toggle**:
+    -   **Takım Geneli**: View aggregate data for the entire team.
+    -   **Kişisel Verilerim**: Switch to this mode to see data for a specific user.
+    -   **User Selection**: When in Personal mode, use the dropdown to select the target user.
+2.  **Charts**:
+    -   **Pie Charts**: View distribution of Categories and Statuses.
+    -   **Leaderboards**: See Top Users and Top Systems by Effort hours.
+    -   **Heatmap**: Visualize busiest days in the timeline.
+3.  **AI Summary**:
+    -   Enter your Local LLM URL (default: `http://host.docker.internal:11434/api/generate`) and Model (e.g., `llama3`).
+    -   Click **Özet Oluştur** to generate a text summary of recent team activities.

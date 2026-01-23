@@ -1,7 +1,0 @@
-- Authentication, Role-based Access Control (Future).
-- gelecek hafta için planan aksiyonlar kolonu eklencek. bu haftanın haftanın aksiyonları girilen geçen haftadan planlanan otomatik gelecek, kullanıcı bunlardan birini seçip düzenleyebilir, veya yeni ekleyebilir
-- dashboard. proje, talep, defect dağılımı, grafik pasta olarak eklenecek. genel ve kişi bazlı.
-- time management takvim, eklenecek, bu takvime kişilerin izinler izinlerini de ekleyebilecekler.  
-- yeni aktivite eklendiğinde otomatik olarak en son aktiviteleri öner
-- listeleme alanında her bir aksiyonun yanında tarihi de görünsün.
-- listeleme ekranında değişiklik yapılabilsin, geçmiş bir işin yeni bir aktivite eklemeden mevcut haftada güncellenebilsin.

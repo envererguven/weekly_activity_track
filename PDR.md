@@ -70,6 +70,9 @@ Each activity entry must capture:
 - **Visualizations**:
   - Effort by Person (Bar Chart)
   - Status Distribution (Pie Chart)
+  - Effort by product (Pie Chart)
+  - Effort by work  type (project,  demand, defect, security, other) (Pie Chart)
+
 - **Executive Summary (LLM Integration)**:
   - Integration with a Local LLM (Ollama) running in a Docker container.
   - **Functionality**: A button to generate a summary of recent activities.
@@ -96,14 +99,34 @@ The solution is fully containerized with `docker-compose`.
 - **Phase 2.1 (Refinements)**: Advanced Filtering, Dashboard Visuals, Test Data Generation (2024/2025).
 - **Phase 3 (UX Intelligence)**:
   - **Smart Suggestions**: Auto-populate fields based on recent history when creating new activities.
-  - **List View Upgrade**: Display dates next to actions; Allow "In-Line Editing" to update past/current items without creating new entries.
+  - **List View Upgrade**: Display dates next to actions; Allow "In-Line Editing" to update past/current items without creating new entries. (Completed)
 - **Phase 4 (Planning Module)**:
   - **Next Week's Plan**: Add column for "Actions Planned for Next Week".
   - **Auto-Carryover**: Logic to surface last week's "Planned" items as suggestions for the current week.
-- **Phase 5 (Advanced Analytics)**:
+- **Phase 5 (Advanced Analytics & Insights)**: (Completed)
   - **Visual Dashboard**: Pie/Bar charts for distribution (Project vs Request vs Defect).
+  - **Effort Leaderboards**: Top Users by Effort, Top Systems/Products by Effort (Descending).
+  - **Heatmaps**: "Busiest Times" analysis (Historical actuals vs Future plans).
   - **Scopes**: Toggle between "Personal" (My metrics) and "Global" (Team metrics) views.
-- **Phase 6 (Resource Management)**:
-  - **Calendar**: Visual calendar for Time-off/Leave tracking.
-  - **Availability**: Integrate leave data into capacity planning.
-- **Phase 7 (Security)**: Authentication & RBAC (Future). 
+- **Phase 6 (Inventory Module)**:
+  - **Asset Management**: dedicated section (`/inventory`) for tracking team assets/envs.
+  - **Navigation**: Accessible via top-level menu.
+- **Phase 7 (Product Intelligence)**:
+  - **Product Metrics**: Track Revenue, Usage, User Count, SMS Volume per product.
+  - **Data Input**: Form-based entry + Bulk Excel Upload capability.
+  - **Reporting**: specialized view for Product KPIs.
+- **Phase 8 (Financials & Budget)**:
+  - **Budget Tracking**: Planned vs Realized tracking.
+  - **Fields**: Kades No, Man/Day, Vendor, Model, CR, Remaining Budget.
+  - **Integration**: Excel Upload support (SAP integration future-proofed).
+- **Phase 9 (External Integrations)**:
+  - **Project Connect**: Fetch Docs, GTD, BRD via `Proje ID` (Proje3T integration).
+  - **Defect Connect**: Fetch Status, Assignee, Description via `Defect ID` (HP ALM integration).
+- **Phase 10 (Security)**: Authentication & RBAC.
+
+### 5.1 Navigation Structure (New)
+The Sidebar/Menu will be reorganized as follows:
+1.  **Haftalık Rapor** (Weekly Report) - *Home*
+2.  **Envanter** (Inventory)
+3.  **Ürün Raporları** (Product Metrics)
+4.  **Bütçe** (Budget) 

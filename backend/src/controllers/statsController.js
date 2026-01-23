@@ -18,55 +18,87 @@ exports.getStats = async (req, res) => {
 
 exports.getDashboardStats = async (req, res) => {
     try {
-        // 1. Total Effort
-        // In a real app we'd need to parse weekly_data JSON to sum up efforts properly. 
-        // For MVP, if we don't have normalized effort table, this is tricky.
-        // Assuming 'activities' table might need better schema for pure SQL aggregation or we interpret JSON here.
-        // BUT, requirements said "Harcanan Efor" is a field. If it's inside JSONB `weekly_data`, we can use jsonb queries.
-        // Example weekly_data: { "2026-W01": { "progress": "...", "effort": 5 } }
+        const { scope, userId } = req.query; // scope='personal' or 'global', userId needed for personal
 
-        // Let's aggregate total effort across all records
+        const isPersonal = scope === 'personal';
+        const userFilter = isPersonal && userId ? `AND a.user_id = ${userId}` : '';
+        const userFilterU = isPersonal && userId ? `AND u.id = ${userId}` : '';
+
+        // 1. Total Effort
         const effortQuery = `
             SELECT sum((value->>'effort')::numeric) as total_effort 
-            FROM activities, jsonb_each(weekly_data)
+            FROM activities a, jsonb_each(weekly_data)
+            WHERE 1=1 ${userFilter}
         `;
         const totalEffortResult = await db.query(effortQuery);
         const totalEffort = totalEffortResult.rows[0].total_effort || 0;
 
-        // 2. Effort by Person
+        // 2. Effort by Person (Only relevant for Global, or just single user for Personal)
         const effortByPersonQuery = `
             SELECT u.full_name, COALESCE(sum((value->>'effort')::numeric), 0) as effort
             FROM users u
             LEFT JOIN activities a ON u.id = a.user_id
             LEFT JOIN jsonb_each(a.weekly_data) ON true
-            WHERE u.is_active = true
+            WHERE u.is_active = true ${userFilterU}
             GROUP BY u.full_name
+            ORDER BY effort DESC
+            LIMIT 10
         `;
         const effortByPerson = await db.query(effortByPersonQuery);
 
         // 3. Status Distribution
         const statusDistQuery = `
             SELECT status, COUNT(*) as count 
-            FROM activities 
+            FROM activities a
+            WHERE 1=1 ${userFilter}
             GROUP BY status
         `;
         const statusDist = await db.query(statusDistQuery);
 
-        // 4. Activity Count by User
-        const activityCountQuery = `
-            SELECT u.full_name, COUNT(a.id) as task_count
-            FROM users u
-            LEFT JOIN activities a ON u.id = a.user_id
-            WHERE u.is_active = true
-            GROUP BY u.full_name
-         `;
-        const activityCount = await db.query(activityCountQuery);
+        // 4. Activity Distribution (Category) - NEW
+        const categoryDistQuery = `
+            SELECT category, COUNT(*) as count 
+            FROM activities a
+            WHERE 1=1 ${userFilter}
+            GROUP BY category
+        `;
+        const categoryDist = await db.query(categoryDistQuery);
+
+        // 5. Effort by Product (Top 5) - NEW
+        const effortByProductQuery = `
+            SELECT p.name, COALESCE(sum((value->>'effort')::numeric), 0) as effort
+            FROM products p
+            LEFT JOIN activities a ON p.id = a.product_id
+            LEFT JOIN jsonb_each(a.weekly_data) ON true
+            WHERE 1=1 ${userFilter}
+            GROUP BY p.name
+            ORDER BY effort DESC
+            LIMIT 5
+        `;
+        const effortByProduct = await db.query(effortByProductQuery);
+
+        // 6. Heatmap Data (Activity count by day) - NEW
+        // Using updated_at::date as proxy for activity date
+        const heatmapQuery = `
+            SELECT to_char(updated_at, 'YYYY-MM-DD') as date, COUNT(*) as count
+            FROM activities a
+            WHERE 1=1 ${userFilter}
+            GROUP BY date
+            ORDER BY date DESC
+            LIMIT 60
+        `;
+        const heatmapData = await db.query(heatmapQuery);
+
+        // 7. Top Users (Global only mostly, but query logic holds)
+        // Reusing effortByPerson results for Table
 
         res.json({
-            total_effort: totalEffort,
-            effort_by_person: effortByPerson.rows,
-            status_distribution: statusDist.rows,
-            activity_count_by_person: activityCount.rows
+            total_effort: parseFloat(totalEffort),
+            effort_by_person: effortByPerson.rows.map(r => ({ ...r, effort: parseFloat(r.effort) })),
+            status_distribution: statusDist.rows.map(r => ({ ...r, count: parseInt(r.count) })),
+            category_distribution: categoryDist.rows.map(r => ({ ...r, count: parseInt(r.count) })),
+            top_products: effortByProduct.rows.map(r => ({ ...r, effort: parseFloat(r.effort) })),
+            heatmap_data: heatmapData.rows.map(r => ({ ...r, count: parseInt(r.count) }))
         });
 
     } catch (error) {
@@ -96,15 +128,12 @@ exports.generateExecutiveSummary = async (req, res) => {
         `;
 
         // Call LLM
-        // Note: Ollama API format usually expects { model: "name", prompt: "..." } and returns stream unless "stream": false
         const response = await axios.post(targetUrl, {
             model: targetModel,
             prompt: prompt,
             stream: false
         });
 
-        // Ollama returns { response: "..." }
-        // Other APIs might differ, but we'll target standard Ollama for now as requested.
         const summary = response.data.response || response.data.content || "No response content found.";
 
         res.json({ summary });

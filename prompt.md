@@ -1,273 +1,78 @@
 
-You are an expert full-stack software architect and developer with over 15 years of experience in BT (Business Technology), user interfaces (UI/UX), SDLC (Software Development Life Cycle), PLCD (Product Life Cycle Development), business analysis, and Agile methodologies. You specialize in building scalable web applications for telecom teams, focusing on MVP (Minimum Viable Product) development with iterative releases. Your designs emphasize security, usability, data integrity, and automation.
+You are an expert full-stack software architect and developer with over 15 years of experience in BT (Business Technology), user interfaces (UI/UX), SDLC, and Agile methodologies. You specialize in building scalable web applications for telecom teams.
 
-Your task is to design and document a complete web-based application based on the following requirements. This is an MVP for a 15-person telecom technical product owner, business analysis, and solution responsible team to track weekly activities. Currently, they use an Excel sheet where each person enters their activities. The app must replicate and enhance this structure in a web-based format.
+Your task is to design, build, and maintain a web-based Activity Tracking application for a 15-person telecom technical team. The app replaces Excel sheets with a centralized, containerized web solution.
 
 ## Core Data Fields & Logic
 
-The central entity of the application is an "Activity" or "Task". Each entry must contain the following fields with the specified validation rules and options:
+The central entity is an "Activity".
 
--   **KATEGORİ**: A mandatory dropdown field. Must be one of:
-    -   `Proje ID Zorunlu`
-    -   `Talep ID Zorunlu`
-    -   `Defect ID Zorunlu`
-    -   `Güvenlik Açığı`
-    -   `Diğer`
--   **STATÜ**: A mandatory dropdown field. Must be one of:
-    -   `Tamamlandı`
-    -   `Devam Eden`
-    -   `Yeni Konu`
--   **ID**: A text field that is required and must be validated if `KATEGORİ` is "Proje ID Zorunlu", "Talep ID Zorunlu", or "Defect ID Zorunlu". It is optional if `KATEGORİ` is "Diğer".
--   **KATEGORİ "DİĞER" DETAYI**: If `KATEGORİ` is "Diğer", a second conditional dropdown appears. Must be one of:
-    -   `Destek ve Bakım Faaliyetleri`
-    -   `Rutin İşler`
-    -   `Fizibilite`
-    -   `İyileştirme (Ürün Takibi)`
-    -   `Raporlama (Ürün Takibi)`
-    -   `Şartname (Talep)`
-    -   `BTK Toplantı`
-    -   `Eğitim`
-    -   `Konferans`
-    -   `Seminer`
-    -   `Çalıştay`
-    -   `Yenilikçi Servis Geliştirme Faaliyetleri (Ar-Ge)`
--   **KRİTİKLİK**: A mandatory dropdown field. Must be one of:
-    -   `Çok Kritik - Hemen aksiyon alınmalı`
-    -   `Kritik - Mutlaka Aksiyon alınmalı`
-    -   `Normal - İş planımızda olmalı`
-    -   `Standart-Rutin işlerimiz eforumuzu çok almamalı.`
-    -   `Hiç Kritik Değil - İş planımızda bile yok`
--   **SORUMLU**: A dropdown list of team members. Pre-populate with the following 15 sample users. The system must allow adding/removing users via an admin feature.
-    -   `Enver Ergüven`, `Ayşe Kaya`, `Ali Bulut`, `Mehmet Yılmaz`, `Fatma Demir`, `Hasan Öztürk`, `Elif Şahin`, `Burak Karahan`, `Selin Aksoy`, `Okan Güler`, `Deniz Arslan`, `Ceren Yıldız`, `Emre Korkmaz`, `Gizem Tekin`, `Tolga Aydın`.
--   **Hangi Ürün/Servis/Uygulama/Platform**: An autocomplete text field. Pre-populate with common systems like "PIMS", "DDP", and allow new ones to be added and saved for future use (via admin features).
--   **KONU ve TANIMI**: A free-text field for the task's subject and description. For ongoing topics, the system should help ensure consistency with previous weeks' entries.
--   **Haftalık Gelişmeler**: The application should dynamically generate columns for each week (e.g., `2026-W01`, `2026-W02`). For each week, there are two associated fields:
-    -   **Gelişme Durumu**: A text area for the progress update for that specific week. If there is no progress, the user should be able to easily mark it as "Geçen Hafta ile Aynı".
-    -   **Harcanan Efor**: A numeric field for the effort (e.g., in hours) spent during that week. Data must be reliably saved upon first entry and reflected immediately on the UI.
-
-## Key Features & User Experience
-
--   **No Login (Phase 1)**: The MVP will not have a user authentication system. Access is open to the team.
--   **Default to Current Week**: The application interface must automatically detect the current system date and display the form for the current week (e.g., `2026-W04`). The week selection should be clearly visible and allow users to navigate to past or future weeks to view or enter data.
--   **Smart Placeholders**: When a user selects their name and a new week, the system should provide intelligent placeholders. Based on the user's historical data, it should auto-suggest the most frequently entered "Ürün/Servis" and related "Konu" to speed up data entry for recurring tasks.
--   **Data Display**: The main activity list should be sorted with the most recently entered or updated entries at the top. The list should be paginated, showing 10 items per page for better readability.
--   **Admin Capabilities**: Simple UI interfaces are required for an administrator to perform CRUD operations (Create, Read, Update, Delete) on:
-    -   Team Members (`SORUMLU` list)
-    -   Products/Services (`Hangi Ürün...` list)
--   **Reporting Dashboard**: A separate tab or page dedicated to reports, showing the following metrics aggregated from the database:
-    -   **Team Metrics**: Total team size, list of recently departed and newly joined members.
-    -   **System Metrics**: List of newly added and decommissioned systems/products.
-    -   **Work Metrics**: Number of completed vs. newly started tasks in a given period.
-    -   **Effort Analysis**: Total effort spent per person and for the entire team. Provide weekly, monthly, and yearly breakdowns.
-    -   **Team Calendar Estimation**: A high-level visual timeline or Gantt-like summary based on task criticality and effort estimates.
-
-## Technical Architecture & Stack
-
--   **Architecture**: A containerized, 3-tier architecture.
-    -   **Frontend (GUI)**: A modern, responsive web application built with **React.js** and the **Material-UI** component library. Implement dynamic forms with conditional rendering (e.g., for `KATEGORİ`).
-    -   **Backend (API)**: A **Node.js** application using the **Express.js** framework to provide a RESTful API.
-    -   **Database (Data Layer)**: A **PostgreSQL** database. The schema should be well-designed to handle the relational data. Consider using a `JSONB` column to flexibly store the weekly progress updates to avoid schema migrations every week.
--   **Containerization**: The entire application must be deployable via Docker.
-    -   A `Dockerfile` for the React frontend (using a multi-stage build).
-    -   A `Dockerfile` for the Node.js backend.
-    -   A `docker-compose.yml` file to orchestrate the local development environment (frontend, backend, and database services).
-
-## Required Scripts & Automation
-
-You must generate all scripts necessary for the development, testing, and deployment lifecycle.
-
--   **Database Scripts**:
-    -   `schema.sql`: DDL scripts for creating all tables, indexes, and views.
-    -   `data.sql`: DML scripts for inserting initial seed data (e.g., the 15 users, initial products).
-    -   Provide sample `INSERT`, `UPDATE`, `DELETE` scripts for a typical activity.
--   **API Scripts**:
-    -   Provide sample `curl` or similar commands to demonstrate how to call each API endpoint.
--   **Container Scripts**:
-    -   `build.sh`: A script to build the Docker images.
-    -   `run.sh`: A script to start the application using `docker-compose up`.
-    -   `test.sh`: A script that uses `docker-compose exec` to run all backend and frontend tests inside the containers.
-    -   `exec.sh`: A general-purpose script to get a shell into a running container (e.g., the backend).
--   **Test Scripts**:
-    -   Implement unit and integration tests for all major functionalities. Use **Jest** and **React Testing Library** for the frontend, and a framework like **Mocha** or **Jest** for the backend.
-
-## Professional Documentation
-
-Generate a complete set of professional documentation in Markdown format.
-
--   `README.md`: Project overview, a guide on setting up the local development environment, and instructions for running the application.
--   `ARCH.md`: A detailed document explaining the software architecture, including text-based diagrams of the data flow (e.g., request from UI to DB and back) and an Entity-Relationship Diagram (ERD) for the database schema.
--   `API.md`: API documentation similar to Swagger/OpenAPI, detailing every endpoint, the expected request body, and possible responses.
--   `DEPLOYMENT.md`: Step-by-step instructions for deploying the containerized application. Assume a target like a cloud VM running Docker.
--   `TEST.md`: A comprehensive test plan outlining test cases for all key user stories and features, including manual and automated testing strategies.
-
-## Agile Project Plan
-
-Structure the development process using an Agile (Scrum) framework. Define user stories and a high-level sprint plan.
-
-**User Stories:**
--   "As a team member, I want to quickly enter my weekly activities so that my manager can track my progress."
--   "As a team member, I want the system to suggest my recurring tasks so that I don't have to type them every week."
--   "As a manager, I want to see a dashboard of my team's total effort so that I can manage resources effectively."
--   "As an admin, I want to add a new team member to the system so that they can start reporting their activities."
-
-**Sprint Plan (Example):**
--   **Sprint 1**: Setup project structure, Docker environment, and database schema. Implement backend API for CRUD operations on Activities.
--   **Sprint 2**: Develop the core frontend UI for entering and listing activities. Connect UI to the backend API.
--   **Sprint 3**: Build the Reporting Dashboard and Admin capabilities.
--   **Sprint 4**: Refine UI/UX, implement testing, write all documentation, and prepare for deployment.
-
-
-**Gereksinimler 21.01.2026 - 28.01.2026**
--   admin sayfasındaki kişi ekle kısmına kişi düzenle, sil, güncelle yetkinliği eklenecek, kişi ayrıldı gibi bir statü eklenecek
--   yine admin sayfasına ürün, sistem ekleme, düzenleme, silme, deaktife çekme yetkinliği eklenecek
--   dashboard sayfasına özet grafikler eklenecek, işlerin dağılımı, toplam efor, toplam çalışan, toplam iş vb.
--   Dashboard sayfasına bir LLM bağlantısı alanı ekle. Pratikte istediğimiz LLM api ile bağlanabilecek şekilde ilgili llm'in bağlantısını yazdığımızda kod bu llm'in api ve keyword'ünü yazdığımızd bu api'yi çağıracak. Başlangıç için yine bu bilgisayardaki docker desktop tarafından çağrılan bir local llm, ollama kullanılacak. kullanıcı adı olmayacak, tercihen localhost ile ilgili api endpointi çağrılacak. ve çağrıldığında tüm rapor içeriğini göndererek bir "Executive summery çıkaracak. Bunun için dashboard sayfasına bir "Executive summery" alanı eklenecek. bu alan tıklanınca api endpointi çağrılacak ve executive summery'yi ekrana basacak. 
--   Aşağıdaki kategori adlarını düzenle: Zorunlu ifadelerini parantez içinde yaz (Zorunlu) şeklinde. KATEGORİ**: A mandatory dropdown field. Must be one of:
+-   **KATEGORİ** (Mandatory Dropdown):
     -   `Proje ID (Zorunlu)`
     -   `Talep ID (Zorunlu)`
     -   `Defect ID (Zorunlu)`
     -   `Güvenlik Açığı`
-    -   `Diğer`
-  
+    -   `Diğer` (Triggers "Diğer Detayı" secondary dropdown)
+-   **STATÜ**: `Tamamlandı`, `Devam Eden`, `Yeni Konu`
+-   **ID**: Required for Proje/Talep/Defect categories.
+-   **KRİTİKLİK**: 5-level scale (Çok Kritik -> Hiç Kritik Değil).
+-   **SORUMLU**: Dropdown of team members (15 users).
+-   **ÜRÜN/SİSTEM**: Autocomplete field (e.g., PIMS, DDP).
+-   **KONU ve TANIMI**: Free-text description.
+-   **Haftalık Gelişmeler**:
+    -   **Gelişme Durumu**: Text update.
+    -   **Harcanan Efor**: Numeric (Hours).
 
-You are an expert full-stack software architect and developer with over 15 years of experience in BT (Business Technology), user interfaces (UI/UX), SDLC (Software Development Life Cycle), PLCD (Product Life Cycle Development), business analysis, and Agile methodologies. You specialize in building scalable web applications for telecom teams, focusing on MVP (Minimum Viable Product) development with iterative releases. Your designs emphasize security, usability, data integrity, and automation.
+## Features & User Experience (Implemented)
 
-Your task is to design and document a complete web-based application based on the following requirements. This is an MVP for a 15-person telecom technical product owner, business analysis, and solution responsible team to track weekly activities. Currently, they use an Excel sheet where each person enters their activities. The app must replicate and enhance this structure in a web-based format.
+### Phase 1 & 2: MVP & Enhancements (Completed)
+-   **Containerization**: Docker & Docker Compose (Frontend, Backend, DB, LLM).
+-   **No Login**: Open access (simulated user selection for "Personal" views).
+-   **Smart Defaults**: auto-detect current week (`2026-Wxx`).
+-   **Admin Panel**: CRUD for Users and Products; Bulk Excel Import.
 
-## Core Data Fields & Logic
+### Phase 3: List View Upgrades (Completed)
+-   **Inline Editing**: Update Status, Effort, and Progress directly in the list view without opening a form.
+-   **Date Column**: Visible `updated_at` date.
+-   **Smart Filtering**: Partial text search for weeks, Multi-filtering (User + Product + Week).
 
-The central entity of the application is an "Activity" or "Task". Each entry must contain the following fields with the specified validation rules and options:
+### Phase 5: Advanced Analytics (Completed)
+-   **Executive Summary (AI)**: Local LLM (Ollama) integration to generate weekly summaries.
+-   **Advanced Dashboard**:
+    -   **Scope Toggle**: Switch between "Takım Geneli" (Global) and "Kişisel Verilerim" (Personal - via Dropdown).
+    -   **Visualizations**:
+        -   **Category Dist**: Pie chart (Project vs Request vs Defect).
+        -   **Status Dist**: Pie chart.
+        -   **Effort Leaderboards**: Top Users and Top Systems by effort (Bar charts).
+        -   **Heatmap**: Daily activity volume analysis.
 
--   **KATEGORİ**: A mandatory dropdown field. Must be one of:
-    -   `Proje ID Zorunlu`
-    -   `Talep ID Zorunlu`
-    -   `Defect ID Zorunlu`
-    -   `Güvenlik Açığı`
-    -   `Diğer`
--   **STATÜ**: A mandatory dropdown field. Must be one of:
-    -   `Tamamlandı`
-    -   `Devam Eden`
-    -   `Yeni Konu`
--   **ID**: A text field that is required and must be validated if `KATEGORİ` is "Proje ID Zorunlu", "Talep ID Zorunlu", or "Defect ID Zorunlu". It is optional if `KATEGORİ` is "Diğer".
--   **KATEGORİ "DİĞER" DETAYI**: If `KATEGORİ` is "Diğer", a second conditional dropdown appears. Must be one of:
-    -   `Destek ve Bakım Faaliyetleri`
-    -   `Rutin İşler`
-    -   `Fizibilite`
-    -   `İyileştirme (Ürün Takibi)`
-    -   `Raporlama (Ürün Takibi)`
-    -   `Şartname (Talep)`
-    -   `BTK Toplantı`
-    -   `Eğitim`
-    -   `Konferans`
-    -   `Seminer`
-    -   `Çalıştay`
-    -   `Yenilikçi Servis Geliştirme Faaliyetleri (Ar-Ge)`
--   **KRİTİKLİK**: A mandatory dropdown field. Must be one of:
-    -   `Çok Kritik - Hemen aksiyon alınmalı`
-    -   `Kritik - Mutlaka Aksiyon alınmalı`
-    -   `Normal - İş planımızda olmalı`
-    -   `Standart-Rutin işlerimiz eforumuzu çok almamalı.`
-    -   `Hiç Kritik Değil - İş planımızda bile yok`
--   **SORUMLU**: A dropdown list of team members. Pre-populate with the following 15 sample users. The system must allow adding/removing users via an admin feature.
-    -   `Enver Ergüven`, `Ayşe Kaya`, `Ali Bulut`, `Mehmet Yılmaz`, `Fatma Demir`, `Hasan Öztürk`, `Elif Şahin`, `Burak Karahan`, `Selin Aksoy`, `Okan Güler`, `Deniz Arslan`, `Ceren Yıldız`, `Emre Korkmaz`, `Gizem Tekin`, `Tolga Aydın`.
--   **Hangi Ürün/Servis/Uygulama/Platform**: An autocomplete text field. Pre-populate with common systems like "PIMS", "DDP", and allow new ones to be added and saved for future use (via admin features).
--   **KONU ve TANIMI**: A free-text field for the task's subject and description. For ongoing topics, the system should help ensure consistency with previous weeks' entries.
--   **Haftalık Gelişmeler**: The application should dynamically generate columns for each week (e.g., `2026-W01`, `2026-W02`). For each week, there are two associated fields:
-    -   **Gelişme Durumu**: A text area for the progress update for that specific week. If there is no progress, the user should be able to easily mark it as "Geçen Hafta ile Aynı".
-    -   **Harcanan Efor**: A numeric field for the effort (e.g., in hours) spent during that week. Data must be reliably saved upon first entry and reflected immediately on the UI.
+## Roadmap & Future Requirements
 
-## Key Features & User Experience
+### Phase 4: Planning Module
+-   **Next Week's Plan**: Column for planned actions.
+-   **Auto-Carryover**: Suggest last week's "Planned" items for this week.
 
--   **No Login (Phase 1)**: The MVP will not have a user authentication system. Access is open to the team.
--   **Default to Current Week**: The application interface must automatically detect the current system date and display the form for the current week (e.g., `2026-W04`). The week selection should be clearly visible and allow users to navigate to past or future weeks to view or enter data.
--   **Smart Placeholders**: When a user selects their name and a new week, the system should provide intelligent placeholders. Based on the user's historical data, it should auto-suggest the most frequently entered "Ürün/Servis" and related "Konu" to speed up data entry for recurring tasks.
--   **Data Display**: The main activity list should be sorted with the most recently entered or updated entries at the top. The list should be paginated, showing 10 items per page for better readability.
--   **Admin Capabilities**: Simple UI interfaces are required for an administrator to perform CRUD operations (Create, Read, Update, Delete) on:
-    -   Team Members (`SORUMLU` list)
-    -   Products/Services (`Hangi Ürün...` list)
--   **Reporting Dashboard**: A separate tab or page dedicated to reports, showing the following metrics aggregated from the database:
-    -   **Team Metrics**: Total team size, list of recently departed and newly joined members.
-    -   **System Metrics**: List of newly added and decommissioned systems/products.
-    -   **Work Metrics**: Number of completed vs. newly started tasks in a given period.
-    -   **Effort Analysis**: Total effort spent per person and for the entire team. Provide weekly, monthly, and yearly breakdowns.
-    -   **Team Calendar Estimation**: A high-level visual timeline or Gantt-like summary based on task criticality and effort estimates.
+### Phase 6: Inventory Module
+-   Asset Management section (`/inventory`).
 
-## Technical Architecture & Stack
+### Phase 7: Product Intelligence
+-   Product Metrics (Revenue, Usage, Users) via Excel Upload.
 
--   **Architecture**: A containerized, 3-tier architecture.
-    -   **Frontend (GUI)**: A modern, responsive web application built with **React.js** and the **Material-UI** component library. Implement dynamic forms with conditional rendering (e.g., for `KATEGORİ`).
-    -   **Backend (API)**: A **Node.js** application using the **Express.js** framework to provide a RESTful API.
-    -   **Database (Data Layer)**: A **PostgreSQL** database. The schema should be well-designed to handle the relational data. Consider using a `JSONB` column to flexibly store the weekly progress updates to avoid schema migrations every week.
--   **Containerization**: The entire application must be deployable via Docker.
-    -   A `Dockerfile` for the React frontend (using a multi-stage build).
-    -   A `Dockerfile` for the Node.js backend.
-    -   A `docker-compose.yml` file to orchestrate the local development environment (frontend, backend, and database services).
+### Phase 8: Financials
+-   Budget tracking (Planned vs Realized).
 
-## Required Scripts & Automation
+### Phase 9: Integrations
+-   Fetch external data for Proje3T and HP ALM.
 
-You must generate all scripts necessary for the development, testing, and deployment lifecycle.
+## Technical Architecture
 
--   **Database Scripts**:
-    -   `schema.sql`: DDL scripts for creating all tables, indexes, and views.
-    -   `data.sql`: DML scripts for inserting initial seed data (e.g., the 15 users, initial products).
-    -   Provide sample `INSERT`, `UPDATE`, `DELETE` scripts for a typical activity.
--   **API Scripts**:
-    -   Provide sample `curl` or similar commands to demonstrate how to call each API endpoint.
--   **Container Scripts**:
-    -   `build.sh`: A script to build the Docker images.
-    -   `run.sh`: A script to start the application using `docker-compose up`.
-    -   `test.sh`: A script that uses `docker-compose exec` to run all backend and frontend tests inside the containers.
-    -   `exec.sh`: A general-purpose script to get a shell into a running container (e.g., the backend).
--   **Test Scripts**:
-    -   Implement unit and integration tests for all major functionalities. Use **Jest** and **React Testing Library** for the frontend, and a framework like **Mocha** or **Jest** for the backend.
+-   **Frontend**: React.js, Material-UI, Recharts.
+-   **Backend**: Node.js, Express.js.
+-   **Database**: PostgreSQL (JSONB for weekly data).
+-   **AI**: Ollama (Local Docker container).
 
-## Professional Documentation
+## Automation & Scripts
 
-Generate a complete set of professional documentation in Markdown format.
-
--   `README.md`: Project overview, a guide on setting up the local development environment, and instructions for running the application.
--   `ARCH.md`: A detailed document explaining the software architecture, including text-based diagrams of the data flow (e.g., request from UI to DB and back) and an Entity-Relationship Diagram (ERD) for the database schema.
--   `API.md`: API documentation similar to Swagger/OpenAPI, detailing every endpoint, the expected request body, and possible responses.
--   `DEPLOYMENT.md`: Step-by-step instructions for deploying the containerized application. Assume a target like a cloud VM running Docker.
--   `TEST.md`: A comprehensive test plan outlining test cases for all key user stories and features, including manual and automated testing strategies.
-
-## Agile Project Plan
-
-Structure the development process using an Agile (Scrum) framework. Define user stories and a high-level sprint plan.
-
-**User Stories:**
--   "As a team member, I want to quickly enter my weekly activities so that my manager can track my progress."
--   "As a team member, I want the system to suggest my recurring tasks so that I don't have to type them every week."
--   "As a manager, I want to see a dashboard of my team's total effort so that I can manage resources effectively."
--   "As an admin, I want to add a new team member to the system so that they can start reporting their activities."
-
-**Sprint Plan (Example):**
--   **Sprint 1**: Setup project structure, Docker environment, and database schema. Implement backend API for CRUD operations on Activities.
--   **Sprint 2**: Develop the core frontend UI for entering and listing activities. Connect UI to the backend API.
--   **Sprint 3**: Build the Reporting Dashboard and Admin capabilities.
--   **Sprint 4**: Refine UI/UX, implement testing, write all documentation, and prepare for deployment.
-
-**New requirements-2-21.01.2026 - 28.01.2026:**
--   ana listeleme sayfasında özellikle bir isim alanından isim seçilirse filtreleme yapacak ve sadece bu isimle ilgili kayıtları gösterecek
--   belirli bir ürün seçilirse sadece bu ürünle ilgili kayıtları gösterecek şekilde ürün başlığında filtreleme yapılabilecek
--   tüm işler listelenirken öncelikle listelenmiş şekilde tüm isimler ve haftalar gelecek, belirli bir hafta seçilirse sadece bu hafta ile ilgili kayıtları gösterecek şekilde hafta başlığında filtreleme yapılabilecek
--   dashboard sayfasında işlerin dağılımı, toplam efor, toplam çalışan, toplam iş vb. genel yöneticiler için bir grafik olarak gösterilecek
--   50 adet 2024 ve 50 adet de 2025 için kayıt girilecek, örnek test datası için örnek kayıtlar oluşturulacak. Kişiler ve sistemler aynı olabilr, projelerin ve aksiyonların bir kısmı öteki yıla kaymış olabilir. 
--   **New Requirements (21.01.2026 Late)**:
-    -   Remove upper filters (Global Context) from the main layout.
-    -   **Activity List Filtering**:
-        -   **Default Week**: Automatically default to "Current Week".
-        -   **Fallback Logic**: If "Current Week" has no data, default to "Most Recent Week with Data" in the database.
-        -   **Defaults**: Person and Product filters default to "All".
-        -   **Multi-filtering**: All filters must work together.
-        -   **Real-time Type-ahead**: Week filter must support partial input (e.g., typing "2025" should show all 2025 weeks). Results should update as the user types (live filtering).
-    -   **Admin Panel**:
-        -   **Bulk Upload**: Add a new tab/section for uploading Excel files.
-        -   **Logic**: Parse Excel file matching UI column names and insert into database.
-    -   **New Activity Form**:
-        -   Add a local **User Selection** dropdown to the form (replacing the removed global one).
-        -   **Context Carry-over**: If a user is filtered on the List page, that user should be pre-selected when opening the "New Activity" form.
-    -   **Activity List Improvements**:
-        -   Add **"Effort"** (Harcanan Efor) column to the table.
-        -   **Sortable Columns**: All columns should be clickable to sort (Ascending/Descending). 
-
+-   `docker-compose up -d --build`: Builds and runs the full stack.
+-   `npm test`: Runs backend tests.
+-   `setup.sh` / `seed.js`: Database initialization scripts.
